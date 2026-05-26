@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iFrame Simple Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        nav {
+            background-color: #333;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav button:hover {
+            background-color: #555;
+        }
+
+        nav button.active {
+            background-color: #007bff;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .page {
+            display: none;
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><button id="homeBtn" class="nav-btn active" onclick="showPage('home')">Home</button></li>
+            <li><button id="singleBtn" class="nav-btn" onclick="showPage('single')">Single iFrame</button></li>
+            <li><button id="multipleBtn" class="nav-btn" onclick="showPage('multiple')">Multiple iFrame</button></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div id="home" class="page active">
+            <h1>Home</h1>
+            <br />
+            <p>Welcome to the testing website.</p>
+        </div>
+
+        <div id="single" class="page">
+        </div>
+
+        <div id="multiple" class="page">
+        </div>
+    </main>
+
+    <script>
+        const pageContent = {
+            single: `
+                <h1>Single iFrame</h1>
+                <br />
+                <iframe data-src="https://goproxy.com/" style="width: 100%; height: 600px; border: none; border-radius: 8px;"></iframe>
+            `,
+            multiple: `
+                <h1>Multiple iFrame</h1>
+                <h3 style="margin-top: 1.5rem;">iFrame 1</h3>
+                <iframe data-src="https://goproxy.com/" style="width: 100%; height: 500px; border: none; border-radius: 8px; margin: 1rem 0;"></iframe>
+                
+                <h3 style="margin-top: 1.5rem;">iFrame 2</h3>
+                <iframe data-src="https://goproxy.com/" style="width: 100%; height: 500px; border: none; border-radius: 8px; margin: 1rem 0;"></iframe>
+                
+                <h3 style="margin-top: 1.5rem;">iFrame 3</h3>
+                <iframe data-src="https://goproxy.com/" style="width: 100%; height: 500px; border: none; border-radius: 8px; margin: 1rem 0;"></iframe>
+                
+                <h3 style="margin-top: 1.5rem;">iFrame 4</h3>
+                <iframe data-src="https://www.w3schools.com" style="width: 100%; height: 500px; border: none; border-radius: 8px; margin: 1rem 0;"></iframe>
+            `
+        };
+
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected page and populate content
+            const activePage = document.getElementById(pageId);
+            activePage.classList.add('active');
+
+            // Populate content if not already populated
+            if (activePage.innerHTML.trim() === '' && pageContent[pageId]) {
+                activePage.innerHTML = pageContent[pageId];
+            }
+
+            // Add active class to clicked button
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                document.getElementById(pageId + 'Btn').classList.add('active');
+            }
+
+            // Load iframes in the active page
+            const iframes = activePage.querySelectorAll('iframe[data-src]');
+            iframes.forEach(iframe => {
+                if (!iframe.src) {
+                    iframe.src = iframe.dataset.src;
+                }
+            });
+
+            // Update URL
+            window.history.pushState({ page: pageId }, pageId, `?page=${pageId}`);
+        }
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', function(event) {
+            if (event.state && event.state.page) {
+                showPageFromUrl(event.state.page);
+            }
+        });
+
+        function showPageFromUrl(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            // Show selected page and populate content
+            const activePage = document.getElementById(pageId);
+            activePage.classList.add('active');
+
+            // Populate content if not already populated
+            if (activePage.innerHTML.trim() === '' && pageContent[pageId]) {
+                activePage.innerHTML = pageContent[pageId];
+            }
+
+            // Add active class to button
+            document.getElementById(pageId + 'Btn').classList.add('active');
+
+            // Load iframes in the active page
+            const iframes = activePage.querySelectorAll('iframe[data-src]');
+            iframes.forEach(iframe => {
+                if (!iframe.src) {
+                    iframe.src = iframe.dataset.src;
+                }
+            });
+        }
+
+        // Load page from URL on page load
+        window.addEventListener('load', function() {
+            const params = new URLSearchParams(window.location.search);
+            const page = params.get('page') || 'home';
+            showPageFromUrl(page);
+        });
+    </script>
+</body>
+</html>
